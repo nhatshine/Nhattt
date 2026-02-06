@@ -1,5 +1,4 @@
-streamlit
-tensorflow-cpu==2.15.0
-keras==2.15.0
+tensorflow==2.15.0
+gradio
 pillow
 numpy<2.0.0

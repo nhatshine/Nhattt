@@ -1,67 +1,33 @@
-import streamlit as st
+import gradio as gr
+import tensorflow as tf
 import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
 from PIL import Image
 
-# =========================
-# CẤU HÌNH
-# =========================
-MODEL_PATH = "human_vs_nonhuman_mobilenetv2.h5"
-IMG_SIZE = (224, 224)
+# Load model với cấu hình an toàn cho Keras 2/3
+model = tf.keras.models.load_model("human_vs_nonhuman_mobilenetv2.h5", compile=False)
 
-st.set_page_config(
-    page_title="Human Detection",
-    page_icon="🧍",
-    layout="centered"
-)
-
-st.title(" Human vs Non-Human Detection")
-st.write("Upload ảnh để phân loại: **Người / Không phải người**")
-
-# =========================
-# LOAD MODEL (CACHE)
-# =========================
-@st.cache_resource
-def load_cnn_model():
-    model = load_model(MODEL_PATH, compile=False)
-    return model
-
-model = load_cnn_model()
-
-# =========================
-# UPLOAD ẢNH
-# =========================
-uploaded_file = st.file_uploader(
-    "Chọn một ảnh",
-    type=["jpg", "jpeg", "png"]
-)
-
-if uploaded_file is not None:
-    # Hiển thị ảnh
-    img = Image.open(uploaded_file).convert("RGB")
-    st.image(img, caption="Ảnh đã upload", use_column_width=True)
-
-    # Tiền xử lý
-    img_resized = img.resize(IMG_SIZE)
-    img_array = image.img_to_array(img_resized)
-    img_array = np.expand_dims(img_array, axis=0) / 255.0
-
-    # =========================
-    # DỰ ĐOÁN
-    # =========================
+def predict_human(img):
+    # Tiền xử lý ảnh giống hệt như khi bạn train
+    img = img.resize((224, 224))
+    img_array = np.array(img) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+    
+    # Dự đoán
     prediction = model.predict(img_array)
-    prob = float(prediction[0][0])  # xác suất là NGƯỜI
-
-    human_percent = prob * 100
-    nonhuman_percent = (1 - prob) * 100
-
-    st.subheader(" Kết quả dự đoán")
-
-    st.write(f" **Xác suất NGƯỜI:** {human_percent:.2f}%")
-    st.write(f" **Xác suất KHÔNG PHẢI NGƯỜI:** {nonhuman_percent:.2f}%")
-
+    prob = float(prediction[0][0])
+    
     if prob > 0.5:
-        st.success(" Dự đoán cuối cùng: **NGƯỜI**")
+        return f"Dự đoán: NGƯỜI ({prob*100:.2f}%)"
     else:
-        st.warning(" Dự đoán cuối cùng: **KHÔNG PHẢI NGƯỜI**")
+        return f"Dự đoán: KHÔNG PHẢI NGƯỜI ({(1-prob)*100:.2f}%)"
+
+# Tạo giao diện Gradio
+interface = gr.Interface(
+    fn=predict_human,
+    inputs=gr.Image(type="pil"),
+    outputs="text",
+    title="Human Detection App",
+    description="Upload ảnh để kiểm tra xem có phải là người hay không."
+)
+
+interface.launch()
