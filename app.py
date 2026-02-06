@@ -16,7 +16,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🧍 Human vs Non-Human Detection")
+st.title(" Human vs Non-Human Detection")
 st.write("Upload ảnh để phân loại: **Người / Không phải người**")
 
 # =========================
@@ -24,7 +24,7 @@ st.write("Upload ảnh để phân loại: **Người / Không phải người**
 # =========================
 @st.cache_resource
 def load_cnn_model():
-    model = load_model(MODEL_PATH)
+    model = load_model(MODEL_PATH, compile=False)
     return model
 
 model = load_cnn_model()
@@ -56,12 +56,12 @@ if uploaded_file is not None:
     human_percent = prob * 100
     nonhuman_percent = (1 - prob) * 100
 
-    st.subheader("📊 Kết quả dự đoán")
+    st.subheader(" Kết quả dự đoán")
 
-    st.write(f"🧍 **Xác suất NGƯỜI:** {human_percent:.2f}%")
-    st.write(f"🚫 **Xác suất KHÔNG PHẢI NGƯỜI:** {nonhuman_percent:.2f}%")
+    st.write(f" **Xác suất NGƯỜI:** {human_percent:.2f}%")
+    st.write(f" **Xác suất KHÔNG PHẢI NGƯỜI:** {nonhuman_percent:.2f}%")
 
     if prob > 0.5:
-        st.success("👉 Dự đoán cuối cùng: **NGƯỜI**")
+        st.success(" Dự đoán cuối cùng: **NGƯỜI**")
     else:
-        st.warning("👉 Dự đoán cuối cùng: **KHÔNG PHẢI NGƯỜI**")
+        st.warning(" Dự đoán cuối cùng: **KHÔNG PHẢI NGƯỜI**")
